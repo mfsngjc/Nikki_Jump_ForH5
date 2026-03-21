@@ -1308,6 +1308,118 @@ const NIKKI_COLORS = {
   'B': 'rgba(255,160,190,0.45)', // 裙花纹
 };
 
+// ============================================================
+//  离屏 Canvas 缓存：预渲染角色 sprite（性能优化）
+//  每种姿态只渲染一次到离屏 canvas，游戏中用 drawImage 贴图
+// ============================================================
+const _nikkiCache = {};  // key: pose名 → { canvas, w, h, ox, oy }
+
+function _buildSpriteCache(spriteName, spriteData) {
+  const px = 2.5;
+  const cols = 16;
+  const rows = spriteData.length;
+  const pad = 8; // 额外边距（给发饰、暗边留空间）
+  const cw = cols * px + pad * 2;
+  const ch = rows * px + pad * 2;
+  const oc = document.createElement('canvas');
+  oc.width = Math.ceil(cw);
+  oc.height = Math.ceil(ch);
+  const c = oc.getContext('2d');
+
+  // 绘制中心偏移 = pad
+  const drawOX = pad;
+  const drawOY = pad;
+
+  // 1) 主体像素
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const v = spriteData[row][col];
+      if (v === 0) continue;
+      const color = NIKKI_COLORS[v];
+      if (!color) continue;
+      c.fillStyle = color;
+      c.fillRect(drawOX + col * px, drawOY + row * px, px, px);
+    }
+  }
+
+  // 2) 暗边（右+下）
+  c.fillStyle = 'rgba(0,0,0,0.08)';
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const v = spriteData[row][col];
+      if (v === 0) continue;
+      const x = drawOX + col * px;
+      const y = drawOY + row * px;
+      const rightEmpty = col >= cols - 1 || spriteData[row][col + 1] === 0;
+      const bottomEmpty = row >= rows - 1 || spriteData[row + 1][col] === 0;
+      if (rightEmpty) c.fillRect(x + px - 1, y, 1, px);
+      if (bottomEmpty) c.fillRect(x, y + px - 1, px, 1);
+    }
+  }
+
+  // 3) 小花发饰（固定位置）
+  const fx = drawOX + 12 * px;
+  const fy = drawOY + 1 * px;
+  c.fillStyle = '#ffe080';
+  c.fillRect(fx, fy, px, px);
+  c.fillStyle = '#ffb0cc';
+  c.fillRect(fx - px, fy, px, px);
+  c.fillRect(fx + px, fy, px, px);
+  c.fillRect(fx, fy - px, px, px);
+  c.fillRect(fx, fy + px, px, px);
+
+  _nikkiCache[spriteName] = {
+    canvas: oc,
+    w: cw, h: ch,
+    // drawImage 时的锚点偏移（让角色中心对齐）
+    anchorX: pad + cols / 2 * px,
+    anchorY: pad + rows / 2 * px,
+    rows: rows, cols: cols, px: px, pad: pad
+  };
+}
+
+// 预渲染眨眼帧（覆盖眼睛区域）—— idle/jump/fall 各一个
+function _buildBlinkCache(spriteName, spriteData) {
+  const base = _nikkiCache[spriteName];
+  if (!base) return;
+  const oc = document.createElement('canvas');
+  oc.width = base.canvas.width;
+  oc.height = base.canvas.height;
+  const c = oc.getContext('2d');
+  c.drawImage(base.canvas, 0, 0);
+
+  const px = base.px, pad = base.pad;
+  const rows = base.rows;
+  // 闭眼：覆盖眼睛为肤色
+  c.fillStyle = NIKKI_COLORS[2];
+  const eyeRow5y = pad + 5 * px;
+  const eyeRow6y = pad + 6 * px;
+  c.fillRect(pad + 5 * px, eyeRow5y, px * 2, px);
+  c.fillRect(pad + 5 * px, eyeRow6y, px * 2, px);
+  c.fillRect(pad + 9 * px, eyeRow5y, px * 2, px);
+  c.fillRect(pad + 9 * px, eyeRow6y, px * 2, px);
+  // 闭眼横线
+  c.fillStyle = NIKKI_COLORS[5];
+  c.fillRect(pad + 5 * px, eyeRow5y + px * 0.5, px * 2, 1);
+  c.fillRect(pad + 9 * px, eyeRow5y + px * 0.5, px * 2, 1);
+
+  _nikkiCache[spriteName + '_blink'] = {
+    canvas: oc,
+    w: base.w, h: base.h,
+    anchorX: base.anchorX, anchorY: base.anchorY,
+    rows: base.rows, cols: base.cols, px: base.px, pad: base.pad
+  };
+}
+
+// 初始化所有缓存
+_buildSpriteCache('idle', NIKKI_IDLE);
+_buildSpriteCache('jump', NIKKI_JUMP);
+_buildSpriteCache('fall', NIKKI_FALL);
+_buildSpriteCache('dead', NIKKI_DEAD);
+_buildBlinkCache('idle', NIKKI_IDLE);
+_buildBlinkCache('jump', NIKKI_JUMP);
+_buildBlinkCache('fall', NIKKI_FALL);
+
 // ---- 开始界面角色预览 ----
 (function drawPreview(){
   const pc = document.getElementById('previewChar').getContext('2d');
@@ -1520,7 +1632,7 @@ function startGame() {
   seedPlatforms();
 
   state = 'play';
-  lastTime = 0; accumulator = 0; // 重置固定时间步
+  lastTime = 0; accumulator = 0; lastRenderTime = 0; // 重置固定时间步+渲染帧率
   if (!window.__raf) { window.__raf = true; requestAnimationFrame(loop); }
 }
 
@@ -4123,106 +4235,35 @@ function drawPlayer() {
 }
 
 // ============================================================
-//  可爱Q版暖暖角色绘制
-//  基于原图：粉色波浪长发、白色花朵连衣裙、棕色大眼、粉色鞋子
+//  可爱Q版暖暖角色绘制（优化版：离屏 Canvas 缓存）
+//  预渲染 sprite 为位图，游戏中只需 drawImage 一次
 function drawNikkiAt(c, ox, oy, scale, t, pose, dead) {
   c.save();
   c.translate(ox, oy);
   c.scale(scale, scale);
 
-  // 选择姿态
-  let sprite;
-  if (pose === 'dead' || dead) sprite = NIKKI_DEAD;
-  else if (pose === 'jumpUp' || pose === 'float') sprite = NIKKI_JUMP;
-  else if (pose === 'falling' || pose === 'apex') sprite = NIKKI_FALL;
-  else sprite = NIKKI_IDLE;
+  // 选择缓存 key
+  let cacheKey;
+  if (pose === 'dead' || dead) cacheKey = 'dead';
+  else if (pose === 'jumpUp' || pose === 'float') cacheKey = 'jump';
+  else if (pose === 'falling' || pose === 'apex') cacheKey = 'fall';
+  else cacheKey = 'idle';
 
-  const px = 2.5;  // 每像素块大小
-  const cols = 16;
-  const rows = sprite.length;
-  const totalW = cols * px;
-  const totalH = rows * px;
+  // 眨眼判断（dead 不眨眼）
+  const isBlinking = cacheKey !== 'dead' && (Math.floor(t / 2) % 90) < 3;
+  const finalKey = isBlinking ? cacheKey + '_blink' : cacheKey;
+  const cached = _nikkiCache[finalKey];
+  if (!cached) { c.restore(); return; }
 
-  // 呼吸微动（idle时）
+  // 呼吸微动（idle/landing时）
   let breatheY = 0;
   if (pose === 'idle' || pose === 'landing') {
     breatheY = Math.sin(t * 0.04) * 0.8;
   }
 
-  // 飘浮时的头发飘动用微小的行偏移模拟
-  const hairWave = (pose === 'float') ? Math.sin(t * 0.06) * 0.5 : 0;
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const v = sprite[row][col];
-      if (v === 0) continue;
-
-      const x = (col - cols/2) * px;
-      let y = (row - rows/2) * px + breatheY;
-
-      // 头发行(0-3)加飘动
-      if (row < 4 && (v === 1 || v === 'A')) {
-        y += hairWave * (1 - row/4);
-      }
-
-      const color = NIKKI_COLORS[v];
-      if (!color) continue;
-
-      c.fillStyle = color;
-      c.fillRect(x, y, px, px);
-    }
-  }
-
-  // 像素暗边（右+下）增加立体感
-  c.fillStyle = 'rgba(0,0,0,0.08)';
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const v = sprite[row][col];
-      if (v === 0) continue;
-      const x = (col - cols/2) * px;
-      const y = (row - rows/2) * px + breatheY;
-      // 右边无像素 或 下方无像素 时画暗边
-      const rightEmpty = col >= cols-1 || sprite[row][col+1] === 0;
-      const bottomEmpty = row >= rows-1 || sprite[row+1][col] === 0;
-      if (rightEmpty) c.fillRect(x + px - 1, y, 1, px);
-      if (bottomEmpty) c.fillRect(x, y + px - 1, px, 1);
-    }
-  }
-
-  // 眨眼动画（每隔一段时间闪一下）
-  if (pose !== 'dead' && !dead) {
-    const blinkFrame = Math.floor(t / 2) % 90;
-    if (blinkFrame < 3) {
-      // 闭眼：覆盖眼睛区域为肤色
-      c.fillStyle = NIKKI_COLORS[2]; // 肤色
-      // 左眼位置 (col 5,6 row 5,6), 右眼位置 (col 9,10 row 5,6)
-      const eyeRow5y = (5 - rows/2) * px + breatheY;
-      const eyeRow6y = (6 - rows/2) * px + breatheY;
-      // 左眼
-      c.fillRect((5 - cols/2) * px, eyeRow5y, px*2, px);
-      c.fillRect((5 - cols/2) * px, eyeRow6y, px*2, px);
-      // 右眼
-      c.fillRect((9 - cols/2) * px, eyeRow5y, px*2, px);
-      c.fillRect((9 - cols/2) * px, eyeRow6y, px*2, px);
-      // 画一条横线作为闭眼
-      c.fillStyle = NIKKI_COLORS[5];
-      c.fillRect((5 - cols/2) * px, eyeRow5y + px*0.5, px*2, 1);
-      c.fillRect((9 - cols/2) * px, eyeRow5y + px*0.5, px*2, 1);
-    }
-  }
-
-  // 小花发饰（头顶右上方，用像素画一个小十字花）
-  if (pose !== 'dead' && !dead) {
-    const fx = (12 - cols/2) * px;
-    const fy = (1 - rows/2) * px + breatheY;
-    c.fillStyle = '#ffe080';
-    c.fillRect(fx, fy, px, px);         // 花心
-    c.fillStyle = '#ffb0cc';
-    c.fillRect(fx - px, fy, px, px);    // 左瓣
-    c.fillRect(fx + px, fy, px, px);    // 右瓣
-    c.fillRect(fx, fy - px, px, px);    // 上瓣
-    c.fillRect(fx, fy + px, px, px);    // 下瓣
-  }
+  // 一次 drawImage 替代几百次 fillRect
+  c.drawImage(cached.canvas,
+    -cached.anchorX, -cached.anchorY + breatheY);
 
   c.restore();
 }
@@ -4261,12 +4302,14 @@ function roundRect(c,x,y,w,h,r) {
 // ============================================================
 const FIXED_DT = 1000 / 60;   // 固定步长 = 16.67ms（以60fps为基准）
 const MAX_STEPS = 4;           // 每帧最多补偿4步（防止低帧率时雪崩）
+const RENDER_INTERVAL = 1000 / 62; // 渲染间隔阈值 ~16.1ms（略宽松，保证60fps设备不跳帧）
 let lastTime = 0;
 let accumulator = 0;
+let lastRenderTime = 0;        // 上次实际渲染的时间戳
 
 function loop(timestamp) {
   try {
-    if (lastTime === 0) lastTime = timestamp;
+    if (lastTime === 0) { lastTime = timestamp; lastRenderTime = timestamp; }
     let delta = timestamp - lastTime;
     lastTime = timestamp;
 
@@ -4291,12 +4334,16 @@ function loop(timestamp) {
       steps++;
     }
 
-    // 每帧只绘制一次
-    if (state === 'dying') {
-      draw();
-      drawDeathPlayer();
-    } else {
-      draw();
+    // 渲染帧率限制：120Hz 屏幕只渲染60fps，跳过多余帧
+    const sinceDraw = timestamp - lastRenderTime;
+    if (sinceDraw >= RENDER_INTERVAL) {
+      lastRenderTime = timestamp - (sinceDraw % RENDER_INTERVAL);
+      if (state === 'dying') {
+        draw();
+        drawDeathPlayer();
+      } else {
+        draw();
+      }
     }
   } catch(e) {
     console.error('Game loop error:', e);
