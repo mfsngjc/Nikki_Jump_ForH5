@@ -954,24 +954,24 @@ window.addEventListener('resize', resize);
 resize();
 
 // ---- 常量（执行案参数） ----
-// ---- 速度缩放 k=0.65 → 跳跃高度不变，速度变慢 ----
-const JUMP_VY       = -5.23;         // 普通弹跳（慢速，高度≈180px不变）
-const SPRING_VY     = -7.8;          // 灵力弹台
-const SIMING_VY     = -13;           // 蹦床弹射速度
-const FEIHUA_VY     = -2.28;         // 飞花持续上升速度
-const FEIHUA_DUR    = 308;           // 飞花持续帧数（补偿慢速，保持飞行距离）
+// ---- 手机版速度：跳跃在k=0.65基础上×2.25加速，移动×2，跳跃高度不变(≈180px) ----
+const JUMP_VY       = -11.78;        // 普通弹跳（高度≈180px不变）
+const SPRING_VY     = -17.55;        // 灵力弹台
+const SIMING_VY     = -29.25;        // 蹦床弹射速度
+const FEIHUA_VY     = -6.67;         // 飞花持续上升速度（×1.3）
+const FEIHUA_DUR    = 105;           // 飞花持续帧数（/1.3，保持飞行距离）
 const SHIELD_DUR    = 300;           // 星光护盾 (~5s)
-const MOVE_SPD      = 0.32;          // 水平加速度（不变）
-const MAX_VX        = 3.8;           // 最大水平速度（不变）
+const MOVE_SPD      = 0.77;          // 水平加速度（×1.2）
+const MAX_VX        = 9.12;          // 最大水平速度（×1.2）
 const FRICTION      = 0.88;
-const MAX_FALL      = 5.85;          // 下落速度上限（9*0.65）
+const MAX_FALL      = 13.17;         // 下落速度上限
 
 // ---- 可变重力曲线（跳跃手感核心） ----
-// 速度×0.65, 重力×0.4225(=0.65²) → 跳跃高度不变，节奏变慢更飘逸
-const GRAVITY_UP    = 0.076;         // 上升时重力（更轻，更飘逸）
-const GRAVITY_DOWN  = 0.148;         // 下降时重力（适中，不再急坠）
-const GRAVITY_APEX  = 0.051;         // 接近跳跃顶点时重力（极轻，长滞空）
-const APEX_THRESHOLD = 0.98;         // |vy| < 此值视为"顶点附近"（1.5*0.65）
+// 重力×2.25 → 跳跃高度不变，速度极快极干脆
+const GRAVITY_UP    = 0.385;         // 上升时重力
+const GRAVITY_DOWN  = 0.749;         // 下降时重力
+const GRAVITY_APEX  = 0.259;         // 跳跃顶点重力
+const APEX_THRESHOLD = 2.21;         // |vy| < 此值视为"顶点附近"（0.98×1.5）
 
 // ---- 着陆跳跃冷却 ----
 const LAND_COOLDOWN = 6;             // 落地后冷却帧数（0.1s @60fps）
@@ -979,7 +979,7 @@ const LAND_COOLDOWN = 6;             // 落地后冷却帧数（0.1s @60fps）
 // 平台间距
 const BASE_GAP   = 45;
 const MAX_GAP    = 95;
-// 最大跳跃高度 ≈ JUMP_VY² / (2*GRAVITY_UP)  → 8.05²/(2*0.18) ≈ 180px
+// 最大跳跃高度 ≈ JUMP_VY² / (2*GRAVITY_UP)  → 11.78²/(2*0.385) ≈ 180px
 const MAX_JUMP_H = (JUMP_VY * JUMP_VY) / (2 * GRAVITY_UP);
 const SAFE_GAP   = MAX_JUMP_H * 0.68;                    // 安全上限
 
