@@ -1095,7 +1095,11 @@ document.addEventListener('keyup',   e => { keys[e.code] = false; });
 let activeTouches = {};  // 记录每个 touch 的位置
 
 document.addEventListener('touchstart', e => {
-  e.preventDefault();
+  // 如果触摸的是按钮/UI元素，不阻止默认行为（否则 onclick 无法触发）
+  const tag = e.target.tagName;
+  const isUI = (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' ||
+                e.target.closest('.overlay') || e.target.closest('#startScreen'));
+  if (!isUI) e.preventDefault();
   for (const t of e.changedTouches) {
     activeTouches[t.identifier] = t.clientX;
   }
@@ -1154,9 +1158,15 @@ window.addEventListener('deviceorientation', e => {
   if (e.gamma != null) tiltX = Math.max(-1, Math.min(1, e.gamma/30));
 });
 
-// ---- 按钮 ----
+// ---- 按钮（onclick + touchend 双保险，防止手机端 click 被 preventDefault 吞掉）----
 document.getElementById('btnStart').onclick = startGame;
 document.getElementById('btnRe').onclick    = startGame;
+document.getElementById('btnStart').addEventListener('touchend', e => {
+  e.preventDefault(); startGame();
+});
+document.getElementById('btnRe').addEventListener('touchend', e => {
+  e.preventDefault(); startGame();
+});
 
 // ---- 开始界面雾气装饰 ----
 (function initStars(){
