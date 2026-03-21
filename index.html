@@ -57,7 +57,8 @@ canvas#C{display:block;width:100%;height:100%}
 .btn{padding:13px 44px;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:50px;
   cursor:pointer;letter-spacing:4px;transition:all .3s;position:relative;overflow:hidden;
   background:linear-gradient(135deg,#ff80b0,#cc7acc);
-  box-shadow:0 4px 25px rgba(255,128,176,.4)}
+  box-shadow:0 4px 25px rgba(255,128,176,.4);
+  touch-action:manipulation;z-index:100;-webkit-tap-highlight-color:rgba(0,0,0,0)}
 .btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 8px 35px rgba(255,128,176,.6)}
 .hint{margin-top:18px;color:rgba(200,200,220,.5);font-size:11px;letter-spacing:1.5px;text-align:center;line-height:1.6;text-shadow:0 1px 3px rgba(0,0,0,.2)}
 
@@ -96,7 +97,7 @@ canvas#C{display:block;width:100%;height:100%}
 .btn-re{padding:11px 40px;font-size:15px;font-weight:600;color:rgba(255,255,255,.85);
   border:1px solid rgba(255,255,255,.2);border-radius:50px;cursor:pointer;
   background:rgba(255,255,255,.08);letter-spacing:4px;margin-top:24px;transition:all .3s;
-  backdrop-filter:blur(4px)}
+  backdrop-filter:blur(4px);touch-action:manipulation;z-index:100;-webkit-tap-highlight-color:rgba(0,0,0,0)}
 .btn-re:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.35);
   box-shadow:0 4px 20px rgba(0,0,0,.3)}
 
@@ -961,8 +962,8 @@ const SIMING_VY     = -29.25;        // 蹦床弹射速度
 const FEIHUA_VY     = -6.67;         // 飞花持续上升速度（×1.3）
 const FEIHUA_DUR    = 105;           // 飞花持续帧数（/1.3，保持飞行距离）
 const SHIELD_DUR    = 300;           // 星光护盾 (~5s)
-const MOVE_SPD      = 0.77;          // 水平加速度（×1.2）
-const MAX_VX        = 9.12;          // 最大水平速度（×1.2）
+const MOVE_SPD      = 0.62;          // 水平加速度（×0.8）
+const MAX_VX        = 7.3;           // 最大水平速度（×0.8）
 const FRICTION      = 0.88;
 const MAX_FALL      = 13.17;         // 下落速度上限
 
@@ -1095,11 +1096,23 @@ document.addEventListener('keyup',   e => { keys[e.code] = false; });
 let activeTouches = {};  // 记录每个 touch 的位置
 
 document.addEventListener('touchstart', e => {
-  // 如果触摸的是按钮/UI元素，不阻止默认行为（否则 onclick 无法触发）
-  const tag = e.target.tagName;
-  const isUI = (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' ||
-                e.target.closest('.overlay') || e.target.closest('#startScreen'));
-  if (!isUI) e.preventDefault();
+  // 检查是否点击了按钮（兼容微信WebView：用多种方式判断）
+  const el = e.target;
+  const isBtn = (el.id === 'btnStart' || el.id === 'btnRe' ||
+                 (el.closest && (el.closest('#btnStart') || el.closest('#btnRe'))));
+  if (isBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    startGame();
+    return;
+  }
+
+  // 检查是否在UI覆盖层上（开始界面/结束界面）
+  const inOverlay = el.closest && (el.closest('.overlay') || el.closest('#startScreen'));
+  if (inOverlay) return; // 不阻止默认行为，也不处理游戏触控
+
+  // 游戏中的触控：阻止默认行为 + 记录触点
+  e.preventDefault();
   for (const t of e.changedTouches) {
     activeTouches[t.identifier] = t.clientX;
   }
@@ -1158,15 +1171,9 @@ window.addEventListener('deviceorientation', e => {
   if (e.gamma != null) tiltX = Math.max(-1, Math.min(1, e.gamma/30));
 });
 
-// ---- 按钮（onclick + touchend 双保险，防止手机端 click 被 preventDefault 吞掉）----
+// ---- 按钮（PC端用onclick后备，手机端由touchstart直接处理）----
 document.getElementById('btnStart').onclick = startGame;
 document.getElementById('btnRe').onclick    = startGame;
-document.getElementById('btnStart').addEventListener('touchend', e => {
-  e.preventDefault(); startGame();
-});
-document.getElementById('btnRe').addEventListener('touchend', e => {
-  e.preventDefault(); startGame();
-});
 
 // ---- 开始界面雾气装饰 ----
 (function initStars(){
