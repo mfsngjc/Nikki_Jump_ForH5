@@ -995,49 +995,49 @@ const SAFE_GAP   = MAX_JUMP_H * 0.68;                    // 安全上限
 const DIFF_TABLE = {
   1:  { platCount: 12, gapMul: 0.40, monsterRate: 0,     itemRate: 0.10, crumbleRate: 0,
         types: {normal:.85, moving:.10, spring:.05, vanish:0},
-        movSpd: [0.35, 0.55], movRange: [18, 30] },
+        movSpd: [0.65, 0.85], movRange: [18, 30] },
   2:  { platCount: 12, gapMul: 0.45, monsterRate: 0,     itemRate: 0.11, crumbleRate: 0.03,
         types: {normal:.72, moving:.16, spring:.07, vanish:.05},
-        movSpd: [0.38, 0.60], movRange: [20, 32] },
+        movSpd: [0.68, 0.90], movRange: [20, 32] },
   3:  { platCount: 12, gapMul: 0.50, monsterRate: 0.02,  itemRate: 0.12, crumbleRate: 0.06,
         types: {normal:.60, moving:.20, spring:.08, vanish:.12},
-        movSpd: [0.42, 0.68], movRange: [22, 35] },
+        movSpd: [0.72, 0.98], movRange: [22, 35] },
   4:  { platCount: 11, gapMul: 0.55, monsterRate: 0.03,  itemRate: 0.13, crumbleRate: 0.08,
         types: {normal:.50, moving:.23, spring:.10, vanish:.17},
-        movSpd: [0.45, 0.78], movRange: [24, 38] },
+        movSpd: [0.75, 1.08], movRange: [24, 38] },
   5:  { platCount: 11, gapMul: 0.60, monsterRate: 0.04,  itemRate: 0.14, crumbleRate: 0.10,
         types: {normal:.42, moving:.25, spring:.10, vanish:.23},
-        movSpd: [0.50, 0.88], movRange: [25, 40] },
+        movSpd: [0.80, 1.18], movRange: [25, 40] },
   6:  { platCount: 11, gapMul: 0.65, monsterRate: 0.05,  itemRate: 0.15, crumbleRate: 0.12,
         types: {normal:.35, moving:.26, spring:.11, vanish:.28},
-        movSpd: [0.55, 1.00], movRange: [26, 42] },
+        movSpd: [0.85, 1.30], movRange: [26, 42] },
   7:  { platCount: 11, gapMul: 0.70, monsterRate: 0.06,  itemRate: 0.16, crumbleRate: 0.14,
         types: {normal:.28, moving:.27, spring:.12, vanish:.33},
-        movSpd: [0.58, 1.10], movRange: [27, 45] },
+        movSpd: [0.88, 1.40], movRange: [27, 45] },
   8:  { platCount: 10, gapMul: 0.74, monsterRate: 0.07,  itemRate: 0.17, crumbleRate: 0.16,
         types: {normal:.24, moving:.27, spring:.12, vanish:.37},
-        movSpd: [0.62, 1.20], movRange: [28, 48] },
+        movSpd: [0.92, 1.50], movRange: [28, 48] },
   9:  { platCount: 10, gapMul: 0.78, monsterRate: 0.08,  itemRate: 0.18, crumbleRate: 0.18,
         types: {normal:.20, moving:.27, spring:.13, vanish:.40},
-        movSpd: [0.65, 1.28], movRange: [28, 50] },
+        movSpd: [0.95, 1.58], movRange: [28, 50] },
   10: { platCount: 10, gapMul: 0.82, monsterRate: 0.09,  itemRate: 0.19, crumbleRate: 0.20,
         types: {normal:.17, moving:.26, spring:.14, vanish:.43},
-        movSpd: [0.70, 1.35], movRange: [29, 52] },
+        movSpd: [1.00, 1.65], movRange: [29, 52] },
   11: { platCount: 10, gapMul: 0.85, monsterRate: 0.10,  itemRate: 0.20, crumbleRate: 0.22,
         types: {normal:.14, moving:.25, spring:.15, vanish:.46},
-        movSpd: [0.75, 1.42], movRange: [30, 54] },
+        movSpd: [1.05, 1.72], movRange: [30, 54] },
   12: { platCount: 10, gapMul: 0.88, monsterRate: 0.11,  itemRate: 0.21, crumbleRate: 0.23,
         types: {normal:.12, moving:.24, spring:.16, vanish:.48},
-        movSpd: [0.80, 1.48], movRange: [30, 56] },
+        movSpd: [1.10, 1.78], movRange: [30, 56] },
   13: { platCount: 10, gapMul: 0.91, monsterRate: 0.12,  itemRate: 0.22, crumbleRate: 0.24,
         types: {normal:.10, moving:.23, spring:.17, vanish:.50},
-        movSpd: [0.85, 1.55], movRange: [30, 58] },
+        movSpd: [1.15, 1.85], movRange: [30, 58] },
   14: { platCount: 10, gapMul: 0.94, monsterRate: 0.13,  itemRate: 0.23, crumbleRate: 0.25,
         types: {normal:.09, moving:.22, spring:.18, vanish:.51},
-        movSpd: [0.90, 1.60], movRange: [30, 60] },
+        movSpd: [1.20, 1.90], movRange: [30, 60] },
   15: { platCount: 10, gapMul: 0.96, monsterRate: 0.14,  itemRate: 0.24, crumbleRate: 0.26,
         types: {normal:.08, moving:.21, spring:.19, vanish:.52},
-        movSpd: [0.95, 1.65], movRange: [30, 62] },
+        movSpd: [1.25, 1.95], movRange: [30, 62] },
 };
 
 // 关卡段状态
@@ -1067,6 +1067,13 @@ let score, maxHeight, bestScore, bestHeight, cameraY, difficulty, tick;
 let platforms, items, monsters, particles, bgStars;
 let nextMilestone = 500;  // 下一个里程碑（每500米）
 let milestoneAnim = null; // 里程碑播报动画 { text, timer, maxTimer }
+
+// ---- 落石事件 ----
+let rockfallActive = false;     // 落石事件是否正在进行
+let rockfallTimer = 0;          // 落石事件剩余帧数（10秒 ≈ 600帧）
+let rockfallCooldown = 0;       // 下次检测落石的冷却帧数
+let rocks = [];                 // 当前飞行中的落石 [{x, y, vx, vy, w, h, rot, rotSpd, shape, alive}]
+let rockfallWarning = 0;        // 落石预警动画帧
 bestScore  = parseInt(localStorage.getItem('nj_best') || '0');
 bestHeight = parseInt(localStorage.getItem('nj_bestH') || '0');
 
@@ -1629,6 +1636,8 @@ function startGame() {
   lightningTimer = 150; lightningFlash = 0;
   stopWeatherSfx(); // 重置天气环境音
   nextMilestone = 500; milestoneAnim = null;
+  rockfallActive = false; rockfallTimer = 0; rockfallCooldown = 0;
+  rocks = []; rockfallWarning = 0;
 
   // 关卡段初始化
   levelSegIndex = 0;
@@ -2090,8 +2099,14 @@ const MONSTER_MIN_GAP_Y = 100; // 怪物之间的最小垂直间距（像素）�
 
 function spawnMonster(x, y) {
   const t = Math.random()<.6?'shadow':'rain';
-  const mw = 30, mh = 30;
-  const MOVE_MARGIN = 75;   // 动态怪物(shadow)与平台的最小水平间距（含移动范围冗余）
+  const mw = 36, mh = 36;           // 尺寸 ×1.2（原30→36）
+  const MOVE_MARGIN = 90;            // 动态怪物(shadow)与静态平台的最小水平间距（加大防重叠）
+
+  // shadow 速度随难度曲线：从 DIFF_TABLE 取 movSpd 范围的 60%-90%
+  const cfg = DIFF_TABLE[currentDiffLevel];
+  const [sMin, sMax] = cfg.movSpd;
+  const shadowSpd = (sMin * 0.6 + sMax * 0.4) + Math.random() * (sMax - sMin) * 0.3;
+  // 最终速度范围约：难度1 ≈ 0.51~0.57，难度8 ≈ 0.73~0.91，难度15 ≈ 0.96~1.17
 
   // 先检查与已有怪物的垂直间距 — 太近就直接放弃
   for (const m of monsters) {
@@ -2110,12 +2125,13 @@ function spawnMonster(x, y) {
     // 检查与所有平台的间距
     for (const p of platforms) {
       if (!p.alive || p.dormant) continue;
-      // 对移动平台，间距要考虑其完整运动范围(ox ± mrange)
       let marginX;
       if (t === 'shadow') {
-        marginX = MOVE_MARGIN;
+        // shadow 是移动怪物：需要额外大间距确保不和静态平台卡在一起
+        // 对移动平台也要加上 mrange 考虑其运动范围
+        marginX = MOVE_MARGIN + (p.type === 'moving' ? p.mrange : 0);
       } else {
-        // 静态怪物：移动平台需额外加上 mrange，确保平台移到最远处也不重叠
+        // 静态怪物：移动平台需额外加上 mrange
         marginX = MONSTER_PLAT_GAP + (p.type === 'moving' ? p.mrange : 0);
       }
       if (Math.abs(tryX - p.x) < (mw/2 + p.w/2 + marginX) &&
@@ -2145,7 +2161,8 @@ function spawnMonster(x, y) {
   }
   // 间距不够 → 不生成，绝不强行刷新
   if (!found) return;
-  monsters.push({x:finalX, y:finalY, type:t, w:mw, h:mh, vx:t==='shadow'?(Math.random()<.5?0.8:-0.8):0, alive:true, ph:Math.random()*6.28});
+  const dir = Math.random() < .5 ? 1 : -1;
+  monsters.push({x:finalX, y:finalY, type:t, w:mw, h:mh, vx:t==='shadow'?(dir*shadowSpd):0, alive:true, ph:Math.random()*6.28});
 }
 
 // ============================================================
@@ -2479,7 +2496,7 @@ function update() {
     }
     m.ph += .05;
 
-    if (Math.abs(P.x-m.x)<20 && Math.abs(P.y-m.y)<28) {
+    if (Math.abs(P.x-m.x)<24 && Math.abs(P.y-m.y)<33) {
       // 飞花无敌：直接击杀敌人 + 得分
       if (P.powerUp === 'feihua') {
         m.alive = false;
@@ -2632,6 +2649,107 @@ function update() {
     }
   }
 
+  // ---- 落石事件 ----
+  // 在 2001m~5000m 区域，每60秒(3600帧) 10%概率触发，持续10秒
+  if (!rockfallActive && maxHeight >= 2001 && maxHeight <= 5000) {
+    if (rockfallCooldown <= 0) {
+      if (Math.random() < 0.10) {
+        rockfallActive = true;
+        rockfallTimer = 600;  // 10秒 ≈ 600帧
+        rockfallWarning = 90; // 1.5秒预警
+        toast('⚠️ 落石警告！');
+        playSfx('hurt'); // 用已有音效做警告声
+      }
+      rockfallCooldown = 3600; // 60秒后再次检测
+    } else {
+      rockfallCooldown--;
+    }
+  }
+
+  if (rockfallActive) {
+    rockfallTimer--;
+    if (rockfallWarning > 0) rockfallWarning--;
+
+    // 预警阶段结束后开始掉落石头
+    if (rockfallWarning <= 0) {
+      // 每 8~15 帧掉一块石头
+      if (tick % (8 + Math.floor(Math.random() * 8)) === 0) {
+        const rw = 18 + Math.random() * 22;  // 18~40px 宽
+        const rh = 16 + Math.random() * 18;  // 16~34px 高
+        // 生成不规则形状（用一组顶点偏移表示）
+        const verts = [];
+        const sides = 5 + Math.floor(Math.random() * 4); // 5~8 个顶点
+        for (let i = 0; i < sides; i++) {
+          const angle = (Math.PI * 2 / sides) * i;
+          const radius = 0.6 + Math.random() * 0.4; // 0.6~1.0 倍半径
+          verts.push({a: angle, r: radius});
+        }
+        rocks.push({
+          x: Math.random() * W,
+          y: cameraY - 20,  // 从屏幕上方外侧开始
+          vx: (Math.random() - 0.5) * 1.5,  // 轻微水平偏移
+          vy: 2.5 + Math.random() * 2.5,     // 下落速度 2.5~5.0
+          w: rw, h: rh,
+          rot: Math.random() * Math.PI * 2,
+          rotSpd: (Math.random() - 0.5) * 0.08,
+          verts: verts,
+          alive: true,
+        });
+      }
+    }
+
+    if (rockfallTimer <= 0) {
+      rockfallActive = false;
+    }
+  }
+
+  // 更新落石位置 & 碰撞检测
+  for (let i = rocks.length - 1; i >= 0; i--) {
+    const r = rocks[i];
+    if (!r.alive) { rocks.splice(i, 1); continue; }
+    r.x += r.vx;
+    r.y += r.vy;
+    r.vy += 0.05;  // 轻微加速
+    r.rot += r.rotSpd;
+
+    // 超出画面底部 → 移除
+    if (r.y > cameraY + H + 60) {
+      rocks.splice(i, 1);
+      continue;
+    }
+
+    // 与玩家碰撞检测
+    if (P.hurtInv <= 0 && P.shield === false) {
+      const dx = Math.abs(P.x - r.x);
+      const dy = Math.abs(P.y - r.y);
+      if (dx < (P.w/2 + r.w/2) * 0.7 && dy < (P.h/2 + r.h/2) * 0.7) {
+        // 命中！扣血 + 推动
+        P.hp--;
+        P.hurtInv = 60;
+        P.hurtFlash = true;
+        playSfx('hurt');
+        emitBurst(P.x, P.y, 8, '#a0856a', 3, 20);
+        emitFloatText(P.x, P.y - 20, '-1 ♥', '#ff3366', 20);
+        // 推动一小段身位（根据石头水平方向推）
+        P.vx += (r.vx > 0 ? 3 : r.vx < 0 ? -3 : (Math.random() < 0.5 ? 3 : -3));
+        P.vy = Math.min(P.vy, -1.5);  // 轻微向上弹
+        r.alive = false;
+        if (P.hp <= 0) {
+          triggerDeath(); return;
+        }
+      }
+    } else if (P.shield) {
+      // 护盾挡住落石
+      const dx = Math.abs(P.x - r.x);
+      const dy = Math.abs(P.y - r.y);
+      if (dx < (P.w/2 + r.w/2) * 0.7 && dy < (P.h/2 + r.h/2) * 0.7) {
+        r.alive = false;
+        P.shield = false; P.shieldTimer = 0; hudPower('');
+        emitBurst(r.x, r.y, 6, '#ffd700', 3, 18);
+      }
+    }
+  }
+
   // ---- 掉落 ----
   if (P.y > cameraY + H + 60) { endGame(); return; }
 
@@ -2699,6 +2817,8 @@ function draw() {
   drawPlats();
   drawItems();
   drawMonsters();
+  drawRocks();
+  drawRockfallWarning();
   drawPlayer();
   drawParticles();
   drawFloatTexts();
@@ -4041,8 +4161,8 @@ function drawMonsters() {
     ctx.save(); ctx.translate(m.x, sy);
     const w = Math.sin(m.ph)*3;
     if (m.type==='shadow') {
-      // ---- 像素风暗影怪 (12x12) ----
-      const px = 2.5;
+      // ---- 像素风暗影怪 (12x12) ---- 尺寸×1.2
+      const px = 3.0;
       const SHADOW_SPRITE = [
         [0,0,0,0,1,1,1,1,0,0,0,0],
         [0,0,1,1,1,1,1,1,1,1,0,0],
@@ -4085,8 +4205,8 @@ function drawMonsters() {
         }
       }
     } else {
-      // ---- 像素风幽灵怪 (10x14) ----
-      const px = 2.2;
+      // ---- 像素风幽灵怪 (10x14) ---- 尺寸×1.2
+      const px = 2.64;
       const GHOST_SPRITE = [
         [0,0,0,1,1,1,1,0,0,0],
         [0,0,1,1,1,1,1,1,0,0],
@@ -4133,6 +4253,72 @@ function drawMonsters() {
     }
     ctx.restore();
   }
+}
+
+// ---- 落石绘制 ----
+function drawRocks() {
+  for (const r of rocks) {
+    if (!r.alive) continue;
+    const sy = r.y - cameraY;
+    if (sy < -60 || sy > H + 60) continue;
+    ctx.save();
+    ctx.translate(r.x, sy);
+    ctx.rotate(r.rot);
+
+    // 不规则石头形状
+    const hw = r.w / 2, hh = r.h / 2;
+    ctx.beginPath();
+    for (let i = 0; i < r.verts.length; i++) {
+      const v = r.verts[i];
+      const vx = Math.cos(v.a) * hw * v.r;
+      const vy = Math.sin(v.a) * hh * v.r;
+      if (i === 0) ctx.moveTo(vx, vy);
+      else ctx.lineTo(vx, vy);
+    }
+    ctx.closePath();
+
+    // 石头填色（深灰岩石）
+    const grad = ctx.createRadialGradient(-hw*0.2, -hh*0.2, 2, 0, 0, Math.max(hw, hh));
+    grad.addColorStop(0, '#8a7d6f');
+    grad.addColorStop(0.6, '#5c5246');
+    grad.addColorStop(1, '#3a332b');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // 暗边描边
+    ctx.strokeStyle = 'rgba(40,35,28,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 高光裂纹效果
+    ctx.strokeStyle = 'rgba(200,190,170,0.3)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(-hw*0.3, -hh*0.1);
+    ctx.lineTo(hw*0.1, hh*0.2);
+    ctx.lineTo(hw*0.3, -hh*0.15);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
+// ---- 落石预警绘制 ----
+function drawRockfallWarning() {
+  if (!rockfallActive || rockfallWarning <= 0) return;
+
+  // 屏幕顶部红色闪烁警告条
+  const flash = Math.sin(tick * 0.3) * 0.5 + 0.5; // 0~1 闪烁
+  ctx.save();
+  ctx.fillStyle = `rgba(200, 50, 30, ${0.15 + flash * 0.2})`;
+  ctx.fillRect(0, 0, W, 40);
+
+  // 警告文字
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = `rgba(255, 220, 180, ${0.7 + flash * 0.3})`;
+  ctx.fillText('⚠ 落石预警 ⚠', W / 2, 26);
+  ctx.restore();
 }
 
 // ---- 玩家绘制 ----
